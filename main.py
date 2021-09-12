@@ -5,6 +5,24 @@ import pyperclip as pyperclip
 import json
 
 
+# ---------------------------- FINDING PASSWORD  ------------------------------- #
+def find_password():
+    website_data = website_entry.get()
+    try:
+        with open("data.json") as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        messagebox.showinfo(title="Oops", message="No Data File Found.")
+    else:
+        try:
+            email_data = data[f"{website_data}"]["email"]
+            password = data[f"{website_data}"]["password"]
+        except KeyError:
+            messagebox.showinfo(title="Oops", message="No details for the website exists.")
+        else:
+            messagebox.showinfo(title=f"{website_data}", message=f"Email: {email_data}\nPassword: {password}")
+
+
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -40,15 +58,23 @@ def save():
     if len(website_data) == 0 or len(password_data) == 0:
         messagebox.showinfo(title="Oops", message="Please don't leave any fields empty!")
     else:
-        with open("data.json", "r") as file:
-            # Reading old data
-            data = json.load(file)
-            # Updating old data with new data
-            data.update(new_data)
+        try:
+            with open("data.json", "r") as file:
+                # Reading old data
+                data = json.load(file)
+                # Updating old data with new data
+                data.update(new_data)
 
-        with open("data.json", "w") as file:
-            #Daving updated data
-            json.dump(data, file, indent=4)
+        except FileNotFoundError:
+            with open("data.json", "w") as file:
+                json.dump(new_data, file, indent=4)
+
+        else:
+            with open("data.json", "w") as file:
+                # Saving updated data
+                json.dump(data, file, indent=4)
+
+        finally:
             website_entry.delete(0, 'end')
             password_entry.delete(0, 'end')
 
@@ -72,21 +98,24 @@ username_label.grid(row=2, column=0)
 password_label = Label(text="Password:", bg="white")
 password_label.grid(row=3, column=0)
 
+website_entry = Entry(width=21)
+website_entry.grid(row=1, column=1)
+website_entry.focus()
+
+email_entry = Entry(width=38)
+email_entry.grid(row=2, column=1, columnspan=3)
+email_entry.insert(0, "anunay@gmail.com")
+
+password_entry = Entry(width=21)
+password_entry.grid(row=3, column=1)
+
 add_button = Button(text="Add", width=36, highlightthickness=0, bg="white", command=save)
 add_button.grid(row=4, column=1, columnspan=2)
 
 generate_button = Button(text="Generate Password", highlightthickness=0, bg="white", command=generate_password)
 generate_button.grid(row=3, column=2)
 
-website_entry = Entry(width=35)
-website_entry.grid(row=1, column=1, columnspan=2)
-website_entry.focus()
-
-email_entry = Entry(width=35)
-email_entry.grid(row=2, column=1, columnspan=2)
-email_entry.insert(0, "anunay@gmail.com")
-
-password_entry = Entry(width=21)
-password_entry.grid(row=3, column=1)
+search_button = Button(text="Search Password", highlightthickness=0, bg="white", command=find_password)
+search_button.grid(row=1, column=2)
 
 window.mainloop()
